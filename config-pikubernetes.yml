@@ -1,0 +1,26 @@
+---
+# First run sets up all of the users needed. It assumes the default user name and password of pi:raspberry
+- hosts:
+  - all
+  roles:
+    - firstrun
+  tags: [never,firstrun]
+
+# common role patches everything and installs common tools. Also sets up security etc.
+- hosts: 
+  - all
+  roles:
+    - common
+
+# installs the master node and saves the node-token in the workernode folder
+- hosts:
+  - masternode
+  roles:
+    - masternode
+
+# sets up worker nodes
+- hosts:
+  - workernode
+  roles:
+    - workernode
+  tags: workernode

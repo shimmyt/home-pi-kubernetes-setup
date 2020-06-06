@@ -1,0 +1,32 @@
+---
+# tasks file for workernode
+- name: set node-token
+  set_fact:
+    nodetoken: "{{ lookup('file', 'roles/workernode/files/node-token') }}"
+    masternode: "{{ groups['masternode'][0] }}"
+
+- name: Add boot line
+  lineinfile:
+    path: /etc/environment
+    regexp: "{{ item }}"
+    line: "{{ item }}"
+  with_items:
+    - K3S_URL="https://{{ masternode }}:6443"
+    - K3S_TOKEN="{{ nodetoken }}"
+
+- name: debug masternode
+  debug:
+    var: masternode
+
+- name: debug nodetoken
+  debug:
+    var: nodetoken
+
+- name: Execute the installer
+  shell: sudo curl -sfL https://get.k3s.io | K3S_URL="https://{{masternode}}:6443" K3S_TOKEN={{nodetoken}} sh -
+  tags: [never,updateworker]
+
+- name: make sure the service is started
+  systemd:
+    state: started
+    name: k3s-agent

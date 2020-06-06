@@ -1,0 +1,23 @@
+---
+- name: Grab K3s and install
+  get_url:
+    url: https://raw.githubusercontent.com/rancher/k3s/master/install.sh
+    dest: /tmp/install.sh
+    mode: '0770'
+  tags: [never,updatemaster]
+
+- name: Execute the installer
+  shell: /tmp/install.sh
+  tags: [never,updatemaster]
+
+- name: remove the installer
+  file: 
+    path: /tmp/install.sh
+    state: absent
+  tags: [never,updatemaster]
+
+- name: copy the node-token
+  fetch:
+    src: /var/lib/rancher/k3s/server/node-token
+    dest: "{{ inventory_dir }}/roles/workernode/files/node-token"
+    flat: yes

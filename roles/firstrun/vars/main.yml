@@ -1,0 +1,4 @@
+---
+# vars file for firstrun
+ansible_user: pi
+ansible_password: raspberry

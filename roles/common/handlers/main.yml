@@ -1,0 +1,9 @@
+- name: restart rsyslog
+  systemd: 
+    state: restarted 
+    name: rsyslog
+
+- name: Restart ssh
+  service: 
+    name: ssh 
+    state: restarted
