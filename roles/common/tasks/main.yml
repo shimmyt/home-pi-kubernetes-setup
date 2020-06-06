@@ -48,3 +48,18 @@
     state: mounted
     opts: rw,hard,intr
   with_items: "{{ nfs_mounts }}"
+
+- name: install docker
+  shell:
+    cmd: curl -sSL https://get.docker.com | sh
+  tags:
+    - [never,installdocker]
+
+- name: make sure users are in docker
+  user:
+    name: "{{ item.name }}"
+    groups: docker
+    append: yes
+  with_items:
+    - "{{ k3s_users }}"
+    - { name: pi }

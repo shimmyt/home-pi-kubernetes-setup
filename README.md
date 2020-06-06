@@ -49,8 +49,9 @@ all:
 ```
 If you setup new raspbian hosts (recommended) run the playbook like this:
 ```shell
-ansible-playbook config-pikubernetes.yml -i yourinventory.yml --tags firstrun,masternode,workernode
+ansible-playbook config-pikubernetes.yml -i yourinventory.yml --tags firstrun,installdocker,masternode,workernode
 ```
+For subsequent runs you don't need any of the tags.
 
 License
 -------
