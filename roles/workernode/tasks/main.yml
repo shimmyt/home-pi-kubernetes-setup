@@ -24,7 +24,6 @@
 
 - name: Execute the installer
   shell: sudo curl -sfL https://get.k3s.io | K3S_URL="https://{{masternode}}:6443" K3S_TOKEN={{nodetoken}} sh -
-  tags: [never,updateworker]
 
 - name: make sure the service is started
   systemd:

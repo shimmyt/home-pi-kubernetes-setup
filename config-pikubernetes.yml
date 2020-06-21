@@ -11,16 +11,18 @@
   - all
   roles:
     - common
+  tags: common
 
 # installs the master node and saves the node-token in the workernode folder
 - hosts:
   - masternode
   roles:
     - masternode
+  tags: [never,updatemaster]
 
 # sets up worker nodes
 - hosts:
   - workernode
   roles:
     - workernode
-  tags: workernode
+  tags: [never,workernode]

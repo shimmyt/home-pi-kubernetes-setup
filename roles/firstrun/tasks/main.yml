@@ -16,7 +16,8 @@
     update_password: always
     password: "{{ item.password | password_hash('sha512') }}"
     shell: /bin/bash
-    groups: sudo
+    groups: 
+      - sudo
   with_items: "{{ k3s_users }}"
 
 - name: Set authorized key, removing all the authorized keys already set
@@ -26,3 +27,26 @@
     state: present
     exclusive: True
   with_items: "{{ k3s_users }}"
+
+- name: update locale
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { src: "files/locale.gen", dst: "/etc/locale.gen" }
+    - { src: "files/locale.txt", dst: "/etc/default/locale" }
+    - { src: "files/timezone.txt", dst: "/etc/timezone" }
+    - { src: "files/keyboard.txt", dst: "/etc/default/keyboard" }
+
+- name: reconfigure keymap
+  command: "{{ item }}"
+  loop:
+    - dpkg-reconfigure -f noninteractive keyboard-configuration
+    - dpkg-reconfigure -f noninteractive locales 
+    - dpkg-reconfigure -f noninteractive tzdata
+    - invoke-rc.d keyboard-setup start
+    - setsid sh -c 'exec setupcon -k --force <> /dev/tty1 >&0 2>&1'
+    - udevadm trigger --subsystem-match=input --action=change

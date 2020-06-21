@@ -1,2 +1,5 @@
 ---
 ansible_become: yes
+KEYMAP: "us"
+LOCALE: "en_US.UTF-8"
+TIMEZONE: "America/Detroit"

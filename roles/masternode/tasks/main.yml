@@ -4,17 +4,14 @@
     url: https://raw.githubusercontent.com/rancher/k3s/master/install.sh
     dest: /tmp/install.sh
     mode: '0770'
-  tags: [never,updatemaster]
 
 - name: Execute the installer
-  shell: /tmp/install.sh
-  tags: [never,updatemaster]
+  shell: /tmp/install.sh --disable traefik
 
 - name: remove the installer
   file: 
     path: /tmp/install.sh
     state: absent
-  tags: [never,updatemaster]
 
 - name: copy the node-token
   fetch:

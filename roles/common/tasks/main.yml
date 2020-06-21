@@ -1,13 +1,27 @@
 ---
+- name: Set timezone
+  timezone:
+    name: "{{ TIMEZONE }}"
+
+- name: Flush IPTables
+  iptables:
+    flush: yes
+
+- name: Switch iptables to legacy
+  command: "{{ item }}"
+  loop:
+    - update-alternatives --set iptables /usr/sbin/iptables-legacy
+    - update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
 - name: Update and upgrade apt packages
   apt:
-    upgrade: yes
+    upgrade: "yes"
     update_cache: yes
     cache_valid_time: 86400 #One day
 
 - name: install common apps
   apt:
-    name: htop,curl,net-tools,nfs-common
+    name: htop,curl,net-tools,nfs-common,vim
 
 - import_tasks: security_tasks.yml
 
@@ -32,7 +46,7 @@
   reboot:
     reboot_timeout: 1200
     test_command: mount
-  when: reboot_required_file.stat.exists or cmdline_updated.changed
+#  when: reboot_required_file.stat.exists or cmdline_updated.changed
 
 - name: Make sure nfs folders are there
   file:
@@ -52,13 +66,13 @@
 - name: install docker
   shell:
     cmd: curl -sSL https://get.docker.com | sh
-  tags:
-    - [never,installdocker]
+  tags: [ never, installdocker ]
 
 - name: make sure users are in docker
   user:
     name: "{{ item.name }}"
-    groups: docker
+    groups: 
+      - docker
     append: yes
   with_items:
     - "{{ k3s_users }}"
