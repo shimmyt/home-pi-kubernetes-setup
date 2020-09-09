@@ -18,3 +18,18 @@
     src: /var/lib/rancher/k3s/server/node-token
     dest: "{{ inventory_dir }}/roles/workernode/files/node-token"
     flat: yes
+  with:
+    - "{{ inventory_dir }}/roles/workernode/files/node-token"
+
+- name: update kubeconfig
+  copy:
+    remote_src: yes
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "/home/{{ primary_user }}/k3s.yaml"
+    owner: "{{ primary_user }}"
+    group: "{{ primary_user }}"
+    mode: 0600
+
+- name: Grabe kubeconfig
+  fetch:
+    src: "/home/{{ primary_user }}/k3s.yaml"

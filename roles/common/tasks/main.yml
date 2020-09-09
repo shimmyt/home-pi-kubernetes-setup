@@ -3,16 +3,6 @@
   timezone:
     name: "{{ TIMEZONE }}"
 
-- name: Flush IPTables
-  iptables:
-    flush: yes
-
-- name: Switch iptables to legacy
-  command: "{{ item }}"
-  loop:
-    - update-alternatives --set iptables /usr/sbin/iptables-legacy
-    - update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-
 - name: Update and upgrade apt packages
   apt:
     upgrade: "yes"
@@ -21,7 +11,7 @@
 
 - name: install common apps
   apt:
-    name: htop,curl,net-tools,nfs-common,vim
+    name: htop,curl,net-tools,nfs-common,vim,open-iscsi
 
 - import_tasks: security_tasks.yml
 
@@ -46,7 +36,58 @@
   reboot:
     reboot_timeout: 1200
     test_command: mount
-#  when: reboot_required_file.stat.exists or cmdline_updated.changed
+  when: reboot_required_file.stat.exists or cmdline_updated.changed
+
+# - name: make sure iscsi folders are there
+#   file:
+#     path: "/mnt/iscsi"
+#     state: directory
+
+# - name: iscsi login
+#   open_iscsi: 
+#     auto_node_startup: yes
+#     portal: "192.168.102.20"
+#     discover: yes
+#     show_nodes: yes
+#     login: yes
+#   register: iscsi_discovery
+#   tags: iscsi
+
+# - name: debug iscsi
+#   debug:
+#     var: iscsi_discovery
+#   tags: [never, iscsi]
+
+# - name: setup iscsi mounts
+#   mount:
+#     path: "/mnt/iscsi"
+#     src: "/dev/sda1"
+#     fstype: ext4
+#     state: mounted
+#     opts: _netdev
+#   tags: iscsi
+
+# - name: unmount iscsi
+#   mount:
+#     path: "/mnt/iscsi"
+#     state: absent
+#   tags: iscsi
+
+# - name: Disconnect from the cached named target
+#   open_iscsi:
+#     login: no
+#     portal: "192.168.102.20"
+#   tags: iscsi
+
+- name: remove k3spersistent mount
+  mount:
+    path: /k3sconfigs
+    state: absent
+
+- name: remove k3spersitent folder
+  file:
+    path: /k3sconfigs
+    state: absent
 
 - name: Make sure nfs folders are there
   file:
@@ -63,11 +104,6 @@
     opts: rw,hard,intr
   with_items: "{{ nfs_mounts }}"
 
-- name: install docker
-  shell:
-    cmd: curl -sSL https://get.docker.com | sh
-  tags: [ never, installdocker ]
-
 - name: make sure users are in docker
   user:
     name: "{{ item.name }}"
@@ -77,3 +113,11 @@
   with_items:
     - "{{ k3s_users }}"
     - { name: pi }
+
+- name: make sure config folders are there
+  file:
+    path: "/var/data/configs"
+    state: directory
+
+- name: sync configs
+  command: rsync -avz /mnt/apps/k3spersistent/ /var/data/configs/

@@ -50,3 +50,23 @@
     - invoke-rc.d keyboard-setup start
     - setsid sh -c 'exec setupcon -k --force <> /dev/tty1 >&0 2>&1'
     - udevadm trigger --subsystem-match=input --action=change
+
+- name: Flush IPTables
+  iptables:
+    flush: yes
+
+- name: Switch iptables to legacy
+  command: "{{ item }}"
+  loop:
+    - update-alternatives --set iptables /usr/sbin/iptables-legacy
+    - update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+- name: install docker
+  shell:
+    cmd: curl -sSL https://get.docker.com | sh
+  tags: [ never, installdocker ]
+
+- name: reboot
+  reboot:
+    reboot_timeout: 1200
+    test_command: mount
